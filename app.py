@@ -2,6 +2,7 @@ import streamlit as st
 import os
 from langchain.schema import HumanMessage,SystemMessage,AIMessage
 from langchain_community.chat_models.openai import ChatOpenAI
+from langchain.memory import ConversationBufferMemory
 
 
 
@@ -14,6 +15,8 @@ load_dotenv()
 
 st.set_page_config(page_title = 'Conversational ChatBot')
 st.header("Let's chat")
+
+memory = ConversationBufferMemory(input_key='input', memory_key='conversation_history')
 
 
 llm = ChatOpenAI(temperature = 0.7)
@@ -31,8 +34,21 @@ def get_openai_response(question):
     st.session_state['chat_history'].append(HumanMessage(content=question))
     answer = llm(st.session_state['chat_history'])
     st.session_state['chat_history'].append(AIMessage(question=answer.content))
+    memory.push(st.session_state['chat_history'])
     return answer.content
 
+
+
+## To see Stored Message 
+
+'''
+# Get all stored messages from memory
+stored_messages = memory.get_all()
+
+# Print the stored messages
+for message in stored_messages:
+    print(message.content)
+'''
 
 
 input =st.text_input('Input: ',key='input')
